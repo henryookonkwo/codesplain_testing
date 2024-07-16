@@ -10,7 +10,6 @@ test("displays information about the repository", () => {
     open_issues: 1,
   };
   render(<RepositoriesSummary repository={repository} />);
-
   // const language = screen.getByText('Javascript');
 
   // expect(language).toBeInTheDocument();
