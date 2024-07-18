@@ -1,9 +1,9 @@
-import { setupServer } from 'msw/node';
-import { rest } from 'msw';
+import { setupServer } from "msw/node";
+import { rest } from "msw";
 
 export function createServer(handlerConfig) {
   const handlers = handlerConfig.map((config) => {
-    return rest[config.method || 'get'](config.path, (req, res, ctx) => {
+    return rest[config.method || "get"](config.path, (req, res, ctx) => {
       return res(ctx.json(config.res(req, res, ctx)));
     });
   });
@@ -11,11 +11,13 @@ export function createServer(handlerConfig) {
 
   beforeAll(() => {
     server.listen();
+    console.log("A server is listening!");
   });
   afterEach(() => {
     server.resetHandlers();
   });
   afterAll(() => {
     server.close();
+    console.log("A server is closed!");
   });
 }
