@@ -1,53 +1,54 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { createServer } from "../../test/server";
-import AuthButtons from "./AuthButtons";
+import HomeRoute from "./HomeRoute";
+import { createServer } from "../test/server";
 
-function renderComponent() {
-  return render(
+createServer([
+  {
+    path: "/api/repositories",
+    res: (req) => {
+      const language = req.url.searchParams.get("q").split("language:")[1];
+      return {
+        items: [
+          { id: 1, full_name: `${language}_one` },
+          { id: 2, full_name: `${language}_two` },
+        ],
+      };
+    },
+  },
+]);
+
+test("renders two links for each language", async () => {
+  render(
     <MemoryRouter>
-      <AuthButtons />
+      <HomeRoute />
     </MemoryRouter>
   );
-}
 
-describe("when user is not signed in", () => {
-  // createServer() ---> GET '/api/user' ---> { user: null }
-  createServer([
-    {
-      path: "/api/user",
-      res: () => {
-        return { user: null };
-      },
-    },
-  ]);
+  // Loop over each language
+  const languages = [
+    "javascript",
+    "typescript",
+    "rust",
+    "go",
+    "python",
+    "java",
+  ];
+  for (let language of languages) {
+    // For each language, make sure we see two links
+    const links = await screen.findAllByRole("link", {
+      name: new RegExp(`${language}_`),
+    });
 
-  test("sign in and sign up are visible", async () => {
-    renderComponent();
-    await screen.findAllByRole("link");
-  });
-
-  test("sign out is not visible", async () => {
-    renderComponent();
-    await screen.findAllByRole("link");
-  });
+    expect(links).toHaveLength(2);
+    expect(links[0]).toHaveTextContent(`${language}_one`);
+    expect(links[1]).toHaveTextContent(`${language}_two`);
+    expect(links[0]).toHaveAttribute("href", `/repositories/${language}_one`);
+    expect(links[1]).toHaveAttribute("href", `/repositories/${language}_two`);
+  }
 });
 
-// describe('when user is signed in', () => {
-//   // createServer() ---> GET '/api/user' ---> { user: { id: 3, email: 'asdf@a.com' }}
-//   createServer([
-//     {
-//       path: '/api/user',
-//       res: () => {
-//         return { user: { id: 3, email: 'asdf@asdf.com' } };
-//       },
-//     },
-//   ]);
-
-//   test('sign in and sign up are not visible', async () => {
-//     renderComponent();
-//   });
-//   test('sign out is visible', async () => {
-//     renderComponent();
-//   });
-// });
+const pause = () =>
+  new Promise((resolve) => {
+    setTimeout(resolve, 100);
+  });

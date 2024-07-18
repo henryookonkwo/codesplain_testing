@@ -1,42 +1,38 @@
-import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import { createServer } from "../../test/server";
-import AuthButtons from "./AuthButtons";
+import { Link } from "react-router-dom";
+import useUser from "../../hooks/useUser";
 
-describe("when user is not signed in", () => {
-  // createServer() ---> GET '/api/user' ---> { user: null }
-  createServer([
-    {
-      path: "/api/user",
-      res: () => {
-        return { user: null };
-      },
-    },
-  ]);
+function AuthButtons() {
+  const { user, isLoading } = useUser();
 
-  test("when user is not signed in, sign in and sign up are visible", async () => {
-    console.log("Test 1");
-  });
-  test("when user is not signed in, sign out is not visible", async () => {
-    console.log("Test 2");
-  });
-});
+  if (isLoading) {
+    return null;
+  } else if (user) {
+    return (
+      <Link
+        className="block whitespace-nowrap rounded-md px-5 py-2.5 text-sm font-medium border"
+        to="/signout"
+      >
+        Sign Out
+      </Link>
+    );
+  } else {
+    return (
+      <>
+        <Link
+          className="block whitespace-nowrap rounded-md border border-teal-600 text-teal-600 px-5 py-2.5 text-sm font-medium"
+          to="/signin"
+        >
+          Sign In
+        </Link>
+        <Link
+          className="block whitespace-nowrap rounded-md bg-teal-600 border border-teal-600 px-5 py-2.5 text-sm font-medium text-white"
+          to="/signup"
+        >
+          Sign Up
+        </Link>
+      </>
+    );
+  }
+}
 
-describe("when user is signed in", () => {
-  // createServer() ---> GET '/api/user' ---> { user: { id: 3, email: 'asdf@a.com' }}
-  createServer([
-    {
-      path: "/api/user",
-      res: () => {
-        return { user: { id: 3, email: "asdf@asdf.com" } };
-      },
-    },
-  ]);
-
-  test("when user is signed in, sign in and sign up are not visible", async () => {
-    console.log("Test 3");
-  });
-  test("when user is signed in, sign out is visible", async () => {
-    console.log("Test 4");
-  });
-});
+export default AuthButtons;
